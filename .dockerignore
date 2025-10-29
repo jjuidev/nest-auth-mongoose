@@ -1,0 +1,8 @@
+.husky
+build
+docs
+node_modules
+test
+README.md
+.env*
+!.env.example

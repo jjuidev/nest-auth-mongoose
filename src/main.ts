@@ -21,7 +21,7 @@ const bootstrap = async () => {
 	const apiPrefix = configService.get('API_PREFIX');
 
 	app.enableCors(CORS_OPTIONS);
-	app.setGlobalPrefix(apiPrefix);
+	app.setGlobalPrefix('v1/api');
 
 	app.use(helmet());
 	app.use(compression());

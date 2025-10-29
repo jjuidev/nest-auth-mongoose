@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
-import { BaseService } from '@/core/database';
-import { LoggerService } from '@/core/logger/logger.service';
-import { InjectLogger } from '@/core/logger/decorators/inject-logger.decorator';
-
-import { User } from '../schemas/user.schema';
 import { UserRepository } from '../repositories/user.repository';
+import { User } from '../schemas/user.schema';
+import { BaseService } from '@/core/database/services/base.service';
+import { InjectLogger } from '@/core/logger/decorators/inject-logger.decorator';
+import { LoggerService } from '@/core/logger/logger.service';
 
 @Injectable()
 export class UserService extends BaseService<User> {
@@ -20,6 +19,7 @@ export class UserService extends BaseService<User> {
 		this.logger.log(`Creating user: ${email}`);
 
 		const existingUser = await this.userRepository.findByEmail(email);
+
 		if (existingUser) {
 			this.logger.warn(`User already exists: ${email}`);
 			throw new Error('User already exists');
@@ -63,8 +63,11 @@ export class UserService extends BaseService<User> {
 	}
 
 	async getUserStats(): Promise<{ total: number; active: number }> {
-		const [total, active] = await Promise.all([this.count(), this.userRepository.countActiveUsers()]);
+		const [total, active] = await Promise.all([this.userRepository.count(), this.userRepository.countActiveUsers()]);
 
-		return { total, active };
+		return {
+			total,
+			active,
+		};
 	}
 }

@@ -7,16 +7,32 @@ import { Document } from 'mongoose';
 	versionKey: false,
 })
 export class User extends Document {
-	@Prop({ required: true, unique: true, trim: true, lowercase: true })
+	@Prop({
+		required: true,
+		unique: true,
+		trim: true,
+		lowercase: true,
+	})
 	email: string;
 
-	@Prop({ required: true, minlength: 2, maxlength: 100 })
+	@Prop({
+		required: true,
+		minlength: 2,
+		maxlength: 100,
+	})
 	name: string;
 
-	@Prop({ required: true, select: false })
+	@Prop({
+		required: true,
+		select: false,
+	})
 	password: string;
 
-	@Prop({ type: String, enum: ['user', 'admin'], default: 'user' })
+	@Prop({
+		type: String,
+		enum: ['user', 'admin'],
+		default: 'user',
+	})
 	role: string;
 
 	@Prop({ default: true })

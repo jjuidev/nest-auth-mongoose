@@ -10,7 +10,7 @@ import { ConfigService } from '@/core/config/config.service';
 			imports: [ConfigModule],
 			inject: [ConfigService],
 			useFactory: async (configService: ConfigService) => ({
-				uri: configService.get('MONGODB_URI'),
+				uri: configService.get('DATABASE_MONGODB_URI'),
 				retryAttempts: 3,
 				retryDelay: 1000,
 			}),

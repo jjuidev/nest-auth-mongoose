@@ -1,12 +1,13 @@
 import { Document, FilterQuery, Model, ProjectionType, QueryOptions, UpdateQuery } from 'mongoose';
 
-import { IRepository } from '../interfaces/repository.interface';
+import { IRepository } from '@/core/database/interfaces/repository.interface';
 
 export abstract class BaseRepository<T extends Document> implements IRepository<T> {
 	constructor(protected readonly model: Model<T>) {}
 
 	async create(data: Partial<T>): Promise<T> {
 		const entity = new this.model(data);
+
 		return entity.save();
 	}
 
@@ -18,36 +19,35 @@ export abstract class BaseRepository<T extends Document> implements IRepository<
 		return this.model.findById(id, projection, options).exec();
 	}
 
-	async findOne(
-		filter: FilterQuery<T>,
-		projection?: ProjectionType<T>,
-		options?: QueryOptions<T>,
-	): Promise<T | null> {
+	async findOne(filter: FilterQuery<T>, projection?: ProjectionType<T>, options?: QueryOptions<T>): Promise<T | null> {
 		return this.model.findOne(filter, projection, options).exec();
 	}
 
-	async findAll(
-		filter: FilterQuery<T> = {},
-		projection?: ProjectionType<T>,
-		options?: QueryOptions<T>,
-	): Promise<T[]> {
+	async findAll(filter: FilterQuery<T> = {}, projection?: ProjectionType<T>, options?: QueryOptions<T>): Promise<T[]> {
 		return this.model.find(filter, projection, options).exec();
 	}
 
 	async findByIdAndUpdate(id: string, update: UpdateQuery<T>, options?: QueryOptions<T>): Promise<T | null> {
-		return this.model.findByIdAndUpdate(id, update, { new: true, ...options }).exec();
+		return this.model
+			.findByIdAndUpdate(id, update, {
+				new: true,
+				...options,
+			})
+			.exec();
 	}
 
-	async findOneAndUpdate(
-		filter: FilterQuery<T>,
-		update: UpdateQuery<T>,
-		options?: QueryOptions<T>,
-	): Promise<T | null> {
-		return this.model.findOneAndUpdate(filter, update, { new: true, ...options }).exec();
+	async findOneAndUpdate(filter: FilterQuery<T>, update: UpdateQuery<T>, options?: QueryOptions<T>): Promise<T | null> {
+		return this.model
+			.findOneAndUpdate(filter, update, {
+				new: true,
+				...options,
+			})
+			.exec();
 	}
 
 	async updateMany(filter: FilterQuery<T>, update: UpdateQuery<T>, options?: QueryOptions<T>): Promise<number> {
 		const result = await this.model.updateMany(filter, update, options as any).exec();
+
 		return result.modifiedCount;
 	}
 
@@ -61,6 +61,7 @@ export abstract class BaseRepository<T extends Document> implements IRepository<
 
 	async deleteMany(filter: FilterQuery<T>, options?: QueryOptions<T>): Promise<number> {
 		const result = await this.model.deleteMany(filter, options as any).exec();
+
 		return result.deletedCount;
 	}
 
@@ -70,6 +71,7 @@ export abstract class BaseRepository<T extends Document> implements IRepository<
 
 	async exists(filter: FilterQuery<T>): Promise<boolean> {
 		const count = await this.model.countDocuments(filter).limit(1).exec();
+
 		return count > 0;
 	}
 }

@@ -1,6 +1,6 @@
 import { Document, FilterQuery, ProjectionType, QueryOptions, UpdateQuery } from 'mongoose';
 
-import { IRepository } from '../interfaces/repository.interface';
+import { IRepository } from '@/core/database/interfaces/repository.interface';
 
 export abstract class BaseService<T extends Document> {
 	constructor(protected readonly repository: IRepository<T>) {}
@@ -17,19 +17,11 @@ export abstract class BaseService<T extends Document> {
 		return this.repository.findById(id, projection, options);
 	}
 
-	async findOne(
-		filter: FilterQuery<T>,
-		projection?: ProjectionType<T>,
-		options?: QueryOptions<T>,
-	): Promise<T | null> {
+	async findOne(filter: FilterQuery<T>, projection?: ProjectionType<T>, options?: QueryOptions<T>): Promise<T | null> {
 		return this.repository.findOne(filter, projection, options);
 	}
 
-	async findAll(
-		filter?: FilterQuery<T>,
-		projection?: ProjectionType<T>,
-		options?: QueryOptions<T>,
-	): Promise<T[]> {
+	async findAll(filter?: FilterQuery<T>, projection?: ProjectionType<T>, options?: QueryOptions<T>): Promise<T[]> {
 		return this.repository.findAll(filter, projection, options);
 	}
 
@@ -37,11 +29,7 @@ export abstract class BaseService<T extends Document> {
 		return this.repository.findByIdAndUpdate(id, update, options);
 	}
 
-	async findOneAndUpdate(
-		filter: FilterQuery<T>,
-		update: UpdateQuery<T>,
-		options?: QueryOptions<T>,
-	): Promise<T | null> {
+	async findOneAndUpdate(filter: FilterQuery<T>, update: UpdateQuery<T>, options?: QueryOptions<T>): Promise<T | null> {
 		return this.repository.findOneAndUpdate(filter, update, options);
 	}
 

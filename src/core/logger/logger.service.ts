@@ -1,7 +1,7 @@
 import { Injectable, LoggerService as NestLoggerService, Scope } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 
-@Injectable({ scope: Scope.TRANSIENT })
+@Injectable()
 export class LoggerService implements NestLoggerService {
 	private context?: string;
 
@@ -17,7 +17,14 @@ export class LoggerService implements NestLoggerService {
 
 	error(message: string, trace?: string, ...optionalParams: unknown[]): void {
 		if (trace) {
-			this.logger.error({ context: this.context, trace }, message, ...optionalParams);
+			this.logger.error(
+				{
+					context: this.context,
+					trace,
+				},
+				message,
+				...optionalParams,
+			);
 		} else {
 			this.logger.error({ context: this.context }, message, ...optionalParams);
 		}
@@ -32,7 +39,14 @@ export class LoggerService implements NestLoggerService {
 	}
 
 	verbose(message: string, ...optionalParams: unknown[]): void {
-		this.logger.log({ context: this.context, level: 'trace' }, message, ...optionalParams);
+		this.logger.log(
+			{
+				context: this.context,
+				level: 'trace',
+			},
+			message,
+			...optionalParams,
+		);
 	}
 
 	fatal(message: string, ...optionalParams: unknown[]): void {

@@ -6,12 +6,18 @@ import { Logger } from 'nestjs-pino';
 import { AppModule } from '@/app/app.module';
 import { CORS_OPTIONS } from '@/app/constants/app.constant';
 import { ConfigService } from '@/core/config/config.service';
+import { LoggerService } from '@/core/logger/logger.service';
 
 const bootstrap = async () => {
 	const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
-	const logger = app.get(Logger);
 	const configService = app.get(ConfigService);
+
+	const loggerService = app.get(LoggerService);
+
+	loggerService.log('9999');
+
+	const logger = app.get(Logger);
 
 	app.useLogger(logger);
 

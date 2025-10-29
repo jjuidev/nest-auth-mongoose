@@ -1,15 +1,19 @@
 import { NestFactory } from '@nestjs/core';
 import compression from 'compression';
 import helmet from 'helmet';
+import { Logger } from 'nestjs-pino';
 
 import { AppModule } from '@/app/app.module';
 import { CORS_OPTIONS } from '@/app/constants/app.constant';
 import { ConfigService } from '@/core/config/config.service';
 
 const bootstrap = async () => {
-	const app = await NestFactory.create(AppModule);
+	const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
+	const logger = app.get(Logger);
 	const configService = app.get(ConfigService);
+
+	app.useLogger(logger);
 
 	const port = configService.get('PORT');
 	const host = configService.get('HOST');
@@ -22,7 +26,7 @@ const bootstrap = async () => {
 	app.use(compression());
 
 	app.listen(port, () => {
-		console.log(`Server is running on ${host}:${port}/${apiPrefix}`);
+		logger.log(`Server is running on ${host}:${port}/${apiPrefix}`, 'Bootstrap');
 	});
 };
 

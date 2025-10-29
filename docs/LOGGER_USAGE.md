@@ -19,19 +19,18 @@ import { PinoLogger } from 'nestjs-pino';
 
 ## Các Cách Sử Dụng
 
-### 1. Constructor Injection (Khuyên Dùng)
+### 1. Sử Dụng @InjectLogger Decorator (Khuyên Dùng)
 
-Cách này đơn giản và rõ ràng nhất:
+Decorator tự động inject và set context, không cần gọi `setContext()` thủ công:
 
 ```typescript
 import { Injectable } from '@nestjs/common';
-import { LoggerService } from '@/core/logger';
+import { InjectLogger, LoggerService } from '@/core/logger';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly logger: LoggerService) {
-    this.logger.setContext(UsersService.name);
-  }
+  @InjectLogger()
+  private readonly logger: LoggerService;
 
   findAll() {
     this.logger.log('Finding all users');
@@ -49,45 +48,32 @@ export class UsersService {
 }
 ```
 
-### 2. Sử Dụng @InjectLogger Decorator
-
-Cách viết ngắn gọn hơn:
+**Với custom context:**
 
 ```typescript
-import { Injectable } from '@nestjs/common';
-import { InjectLogger, LoggerService } from '@/core/logger';
-
 @Injectable()
 export class ProductsService {
-  constructor(
-    @InjectLogger()
-    private readonly logger: LoggerService,
-  ) {
-    this.logger.setContext(ProductsService.name);
-  }
+  @InjectLogger('CustomProductContext')
+  private readonly logger: LoggerService;
 
   create(data: CreateProductDto) {
     this.logger.log('Creating new product');
-    // logic
   }
 }
 ```
 
-### 3. Static Factory Method
+### 2. Constructor Injection (Manual Context)
 
-Nếu cần tạo logger với context ngay từ đầu:
+Nếu cần kiểm soát nhiều hơn, inject thủ công và set context:
 
 ```typescript
 import { Injectable } from '@nestjs/common';
-import { PinoLogger } from 'nestjs-pino';
 import { LoggerService } from '@/core/logger';
 
 @Injectable()
 export class OrdersService {
-  private readonly logger: LoggerService;
-
-  constructor(pinoLogger: PinoLogger) {
-    this.logger = LoggerService.create(pinoLogger, OrdersService.name);
+  constructor(private readonly logger: LoggerService) {
+    this.logger.setContext(OrdersService.name);
   }
 
   process() {
@@ -186,11 +172,18 @@ Các environment variables:
 
 ## Best Practices
 
-### 1. Luôn Set Context
+### 1. Dùng @InjectLogger Decorator
 
 ```typescript
-✅ this.logger.setContext(UsersService.name);
-❌ // Missing context
+✅ @InjectLogger()
+   private readonly logger: LoggerService;
+
+✅ @InjectLogger('CustomContext')
+   private readonly logger: LoggerService;
+
+⚠️  constructor(private readonly logger: LoggerService) {
+     this.logger.setContext(MyService.name);  // Manual, chỉ khi cần thiết
+   }
 ```
 
 ### 2. Import từ Project
@@ -243,12 +236,8 @@ import { InjectLogger, LoggerService } from '@/core/logger';
 
 @Injectable()
 export class PaymentService {
-  constructor(
-    @InjectLogger()
-    private readonly logger: LoggerService,
-  ) {
-    this.logger.setContext(PaymentService.name);
-  }
+  @InjectLogger()
+  private readonly logger: LoggerService;
 
   async processPayment(orderId: string, amount: number) {
     this.logger.log('Processing payment', { orderId, amount });
@@ -306,8 +295,9 @@ Health check và metrics endpoints được ignore tự động.
 ### Logger không xuất logs
 
 ```typescript
-// Kiểm tra đã set context chưa
-this.logger.setContext('MyService');
+// Kiểm tra đã dùng @InjectLogger chưa
+@InjectLogger()
+private readonly logger: LoggerService;
 
 // Kiểm tra LOG_LEVEL trong .env
 // LOG_LEVEL=debug
@@ -326,7 +316,15 @@ this.logger.setContext('MyService');
 ### Logs không có context
 
 ```typescript
-// Đảm bảo gọi setContext trong constructor
+// Đảm bảo dùng @InjectLogger decorator (auto set context)
+@InjectLogger()
+private readonly logger: LoggerService;
+
+// Hoặc với custom context
+@InjectLogger('MyCustomContext')
+private readonly logger: LoggerService;
+
+// Hoặc manual trong constructor
 constructor(private readonly logger: LoggerService) {
   this.logger.setContext(MyService.name);
 }

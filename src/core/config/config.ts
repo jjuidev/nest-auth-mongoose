@@ -12,6 +12,9 @@ export const configSchema = z.object({
 
 	// Logger
 	LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
+
+	// Database
+	MONGODB_URI: z.string().default('mongodb://localhost:27017/nest-auth-mongoose'),
 });
 
 export type Config = z.infer<typeof configSchema>;

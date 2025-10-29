@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 
-import { UserRepository } from '../repositories/user.repository';
-import { User } from '../schemas/user.schema';
-import { BaseService } from '@/core/database/services/base.service';
+import { AuditableService, PaginatedResult, PaginationOptions } from '@/core/database';
 import { InjectLogger } from '@/core/logger/decorators/inject-logger.decorator';
 import { LoggerService } from '@/core/logger/logger.service';
 
+import { UserRepository } from '../repositories/user.repository';
+import { User } from '../schemas/user.schema';
+
 @Injectable()
-export class UserService extends BaseService<User> {
+export class UserService extends AuditableService<User> {
 	@InjectLogger()
 	private readonly logger: LoggerService;
 
@@ -15,7 +16,7 @@ export class UserService extends BaseService<User> {
 		super(userRepository);
 	}
 
-	async createUser(email: string, name: string, password: string): Promise<User> {
+	async createUser(email: string, name: string, password: string, createdBy?: string): Promise<User> {
 		this.logger.log(`Creating user: ${email}`);
 
 		const existingUser = await this.userRepository.findByEmail(email);
@@ -25,11 +26,14 @@ export class UserService extends BaseService<User> {
 			throw new Error('User already exists');
 		}
 
-		const user = await this.userRepository.create({
-			email,
-			name,
-			password,
-		});
+		const user = await this.createWithAudit(
+			{
+				email,
+				name,
+				password,
+			},
+			createdBy,
+		);
 
 		this.logger.log(`User created successfully: ${user.id}`);
 		return user;
@@ -43,9 +47,9 @@ export class UserService extends BaseService<User> {
 		return this.userRepository.findByEmailWithPassword(email);
 	}
 
-	async updateProfile(userId: string, name: string): Promise<User | null> {
+	async updateProfile(userId: string, name: string, updatedBy?: string): Promise<User | null> {
 		this.logger.log(`Updating user profile: ${userId}`);
-		return this.userRepository.findByIdAndUpdate(userId, { name });
+		return this.findByIdAndUpdateWithAudit(userId, { name }, updatedBy);
 	}
 
 	async recordLogin(userId: string): Promise<User | null> {
@@ -62,12 +66,31 @@ export class UserService extends BaseService<User> {
 		return this.userRepository.findActiveUsers();
 	}
 
-	async getUserStats(): Promise<{ total: number; active: number }> {
-		const [total, active] = await Promise.all([this.userRepository.count(), this.userRepository.countActiveUsers()]);
+	async getUserStats(): Promise<{ total: number; active: number; deleted: number }> {
+		const [total, active, deleted] = await Promise.all([
+			this.userRepository.count(),
+			this.userRepository.countActiveUsers(),
+			this.userRepository.countOnlyDeleted(),
+		]);
 
-		return {
-			total,
-			active,
-		};
+		return { total, active, deleted };
+	}
+
+	async getUsersPaginated(options: PaginationOptions): Promise<PaginatedResult<User>> {
+		return this.userRepository.findAllPaginated({ isActive: true }, options);
+	}
+
+	async softDeleteUser(userId: string, deletedBy?: string): Promise<User | null> {
+		this.logger.warn(`Soft deleting user: ${userId}`);
+		return this.softDelete(userId, deletedBy);
+	}
+
+	async restoreUser(userId: string): Promise<User | null> {
+		this.logger.log(`Restoring user: ${userId}`);
+		return this.restore(userId);
+	}
+
+	async getDeletedUsers(): Promise<User[]> {
+		return this.findAllOnlyDeleted();
 	}
 }

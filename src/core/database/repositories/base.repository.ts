@@ -1,6 +1,7 @@
 import { Document, FilterQuery, Model, ProjectionType, QueryOptions, UpdateQuery } from 'mongoose';
 
 import { IRepository } from '@/core/database/interfaces/repository.interface';
+import { PaginatedResult, PaginationOptions } from '@/core/database/interfaces/pagination.interface';
 
 export abstract class BaseRepository<T extends Document> implements IRepository<T> {
 	constructor(protected readonly model: Model<T>) {}
@@ -73,5 +74,39 @@ export abstract class BaseRepository<T extends Document> implements IRepository<
 		const count = await this.model.countDocuments(filter).limit(1).exec();
 
 		return count > 0;
+	}
+
+	async findAllPaginated(
+		filter: FilterQuery<T> = {},
+		options: PaginationOptions,
+		projection?: ProjectionType<T>,
+	): Promise<PaginatedResult<T>> {
+		const { page, limit, sort } = options;
+		const skip = (page - 1) * limit;
+
+		const queryOptions: QueryOptions<T> = {
+			skip,
+			limit,
+			sort: sort || { createdAt: -1 },
+		};
+
+		const [data, total] = await Promise.all([
+			this.findAll(filter, projection, queryOptions),
+			this.count(filter),
+		]);
+
+		const totalPages = Math.ceil(total / limit);
+
+		return {
+			data,
+			meta: {
+				total,
+				page,
+				limit,
+				totalPages,
+				hasNextPage: page < totalPages,
+				hasPrevPage: page > 1,
+			},
+		};
 	}
 }

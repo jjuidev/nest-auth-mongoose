@@ -1,12 +1,11 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Prop, Schema, SchemaFactory, AuditableEntity } from '@/core/database';
 
 @Schema({
 	timestamps: true,
 	collection: 'users',
 	versionKey: false,
 })
-export class User extends Document {
+export class User extends AuditableEntity {
 	@Prop({
 		required: true,
 		unique: true,
@@ -40,9 +39,6 @@ export class User extends Document {
 
 	@Prop()
 	lastLoginAt?: Date;
-
-	createdAt: Date;
-	updatedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

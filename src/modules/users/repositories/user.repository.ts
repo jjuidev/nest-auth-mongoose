@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 
-import { BaseRepository } from '@/core/database/repositories/base.repository';
+import { AuditableRepository, InjectModel } from '@/core/database';
+import type { Model } from '@/core/database';
 import { User } from '@/modules/users/schemas/user.schema';
 
 @Injectable()
-export class UserRepository extends BaseRepository<User> {
+export class UserRepository extends AuditableRepository<User> {
 	constructor(@InjectModel(User.name) private readonly userModel: Model<User>) {
 		super(userModel);
 	}

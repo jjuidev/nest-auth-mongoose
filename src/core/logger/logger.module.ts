@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
-import { LoggerModule as PinoLoggerModule } from 'nestjs-pino';
+import { LoggerModule as PinoLoggerModule, PinoLogger } from 'nestjs-pino';
 
 import { ConfigModule } from '@/core/config/config.module';
 import { ConfigService } from '@/core/config/config.service';
 import { LoggerService } from '@/core/logger/logger.service';
+
+export const BOOTSTRAP_LOGGER = 'BOOTSTRAP_LOGGER';
 
 @Module({
 	imports: [
@@ -49,7 +51,16 @@ import { LoggerService } from '@/core/logger/logger.service';
 			},
 		}),
 	],
-	providers: [LoggerService],
-	exports: [LoggerService],
+	providers: [
+		LoggerService,
+		{
+			provide: BOOTSTRAP_LOGGER,
+			useFactory: (pinoLogger: PinoLogger) => {
+				return LoggerService.create(pinoLogger, 'Bootstrap');
+			},
+			inject: [PinoLogger],
+		},
+	],
+	exports: [LoggerService, BOOTSTRAP_LOGGER],
 })
 export class LoggerModule {}

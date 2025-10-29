@@ -5,15 +5,14 @@ import helmet from 'helmet';
 import { AppModule } from '@/app/app.module';
 import { CORS_OPTIONS } from '@/app/constants/app.constant';
 import { ConfigService } from '@/core/config/config.service';
-import { LoggerService } from '@/core/logger';
+import { BOOTSTRAP_LOGGER, LoggerService } from '@/core/logger';
 
 const bootstrap = async () => {
 	const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
 	const configService = app.get(ConfigService);
-	const logger = app.get(LoggerService);
+	const logger = app.get<LoggerService>(BOOTSTRAP_LOGGER);
 
-	logger.setContext('Bootstrap');
 	app.useLogger(logger);
 
 	const port = configService.get('PORT');

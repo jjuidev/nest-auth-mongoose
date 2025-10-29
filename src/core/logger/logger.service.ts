@@ -1,23 +1,29 @@
 import { Injectable, LoggerService as NestLoggerService, Scope } from '@nestjs/common';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
-@Injectable()
+@Injectable({ scope: Scope.TRANSIENT })
 export class LoggerService implements NestLoggerService {
 	private context?: string;
 
-	constructor(private readonly logger: Logger) {}
+	constructor(private readonly pinoLogger: PinoLogger) {}
+
+	static create(pinoLogger: PinoLogger, context: string): LoggerService {
+		const logger = new LoggerService(pinoLogger);
+		logger.setContext(context);
+		return logger;
+	}
 
 	setContext(context: string): void {
 		this.context = context;
 	}
 
 	log(message: string, ...optionalParams: unknown[]): void {
-		this.logger.log({ context: this.context }, message, ...optionalParams);
+		this.pinoLogger.info({ context: this.context }, message, ...optionalParams);
 	}
 
 	error(message: string, trace?: string, ...optionalParams: unknown[]): void {
 		if (trace) {
-			this.logger.error(
+			this.pinoLogger.error(
 				{
 					context: this.context,
 					trace,
@@ -26,30 +32,23 @@ export class LoggerService implements NestLoggerService {
 				...optionalParams,
 			);
 		} else {
-			this.logger.error({ context: this.context }, message, ...optionalParams);
+			this.pinoLogger.error({ context: this.context }, message, ...optionalParams);
 		}
 	}
 
 	warn(message: string, ...optionalParams: unknown[]): void {
-		this.logger.warn({ context: this.context }, message, ...optionalParams);
+		this.pinoLogger.warn({ context: this.context }, message, ...optionalParams);
 	}
 
 	debug(message: string, ...optionalParams: unknown[]): void {
-		this.logger.debug({ context: this.context }, message, ...optionalParams);
+		this.pinoLogger.debug({ context: this.context }, message, ...optionalParams);
 	}
 
 	verbose(message: string, ...optionalParams: unknown[]): void {
-		this.logger.log(
-			{
-				context: this.context,
-				level: 'trace',
-			},
-			message,
-			...optionalParams,
-		);
+		this.pinoLogger.trace({ context: this.context }, message, ...optionalParams);
 	}
 
 	fatal(message: string, ...optionalParams: unknown[]): void {
-		this.logger.fatal({ context: this.context }, message, ...optionalParams);
+		this.pinoLogger.fatal({ context: this.context }, message, ...optionalParams);
 	}
 }

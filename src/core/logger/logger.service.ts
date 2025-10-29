@@ -9,6 +9,7 @@ export class LoggerService implements NestLoggerService {
 
 	static create(pinoLogger: PinoLogger, context: string): LoggerService {
 		const logger = new LoggerService(pinoLogger);
+
 		logger.setContext(context);
 		return logger;
 	}

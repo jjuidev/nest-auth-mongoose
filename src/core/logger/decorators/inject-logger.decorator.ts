@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 
-import { LoggerService } from '../logger.service';
+import { LoggerService } from '@/core/logger/logger.service';
 
 export const InjectLogger = (context?: string): PropertyDecorator => {
 	const injectDecorator = Inject(PinoLogger);
@@ -15,15 +15,16 @@ export const InjectLogger = (context?: string): PropertyDecorator => {
 			get(this: any) {
 				if (!this[privatePropertyKey]) {
 					const pinoLogger: PinoLogger = this['pinoLogger'];
+
 					if (!pinoLogger) {
-						throw new Error(
-							`PinoLogger not found. Make sure LoggerModule is imported and PinoLogger is available.`,
-						);
+						throw new Error(`PinoLogger not found. Make sure LoggerModule is imported and PinoLogger is available.`);
 					}
 
 					const loggerContext = context || this.constructor.name;
+
 					this[privatePropertyKey] = LoggerService.create(pinoLogger, loggerContext);
 				}
+
 				return this[privatePropertyKey];
 			},
 			enumerable: true,

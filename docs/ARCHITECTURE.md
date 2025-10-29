@@ -11,6 +11,7 @@ This project follows a **domain-driven modular architecture** based on NestJS be
 The project structure is organized around **business problems**, not technical implementation details. Each module represents a feature or domain area that solves a specific business need.
 
 **Benefits:**
+
 - Faster feature location and bug fixing
 - Easier onboarding for new developers
 - Clear separation of concerns
@@ -21,6 +22,7 @@ The project structure is organized around **business problems**, not technical i
 Every feature is encapsulated in a **NestJS Module**. Think of each module as a "mini-onion" that aggregates into the full application architecture.
 
 **What belongs in a module:**
+
 - Controllers (HTTP layer)
 - Services (business logic)
 - DTOs (Data Transfer Objects)
@@ -34,11 +36,13 @@ Every feature is encapsulated in a **NestJS Module**. Think of each module as a 
 The architecture distinguishes between:
 
 **Developer Domain:**
+
 - Framework knowledge (NestJS, TypeScript)
 - Technical implementation
 - Infrastructure concerns
 
 **Business Domain:**
+
 - Problem-solving logic
 - Feature requirements
 - Domain rules
@@ -48,6 +52,7 @@ Keep these concerns separated within each module.
 ### 4. Core Module Pattern
 
 Cross-cutting concerns that affect multiple modules belong in a **core module**:
+
 - Database configuration
 - Authentication setup
 - Logging
@@ -59,33 +64,35 @@ Cross-cutting concerns that affect multiple modules belong in a **core module**:
 
 ```
 src/
-├── core/                    # Cross-cutting concerns
+├── app/                    # Application root module
+│   ├── app.module.ts
+|
+├── core/                   # Cross-cutting concerns
 │   ├── database/           # Database configuration
 │   ├── config/             # Application configuration
 │   └── common/             # Shared utilities, guards, filters
 │
 ├── modules/                # Business domain modules
-│   ├── auth/              # Authentication & authorization
+│   ├── auth/               # Authentication & authorization
 │   │   ├── controllers/
 │   │   ├── services/
 │   │   ├── guards/
 │   │   ├── dto/
 │   │   └── auth.module.ts
 │   │
-│   ├── users/             # User management
+│   ├── users/              # User management
 │   │   ├── controllers/
 │   │   ├── services/
 │   │   ├── entities/
 │   │   ├── dto/
 │   │   └── users.module.ts
 │   │
-│   └── [feature]/         # Other business features
+│   └── [feature]/          # Other business features
 │       ├── controllers/
 │       ├── services/
 │       ├── dto/
 │       └── [feature].module.ts
 │
-├── app.module.ts           # Root module
 └── main.ts                 # Application entry point
 ```
 
@@ -129,18 +136,20 @@ blog/
 ## Dependency Injection
 
 NestJS's DI system enables:
+
 - Loose coupling between modules
 - Easy testing with mock services
 - Clear dependency trees
 - Automatic service instantiation
 
 **Example:**
+
 ```typescript
 @Module({
-  imports: [DatabaseModule], // Import other modules
-  controllers: [UsersController],
-  providers: [UsersService],
-  exports: [UsersService], // Export for use in other modules
+	imports: [DatabaseModule], // Import other modules
+	controllers: [UsersController],
+	providers: [UsersService],
+	exports: [UsersService], // Export for use in other modules
 })
 export class UsersModule {}
 ```
@@ -171,6 +180,7 @@ export class UsersModule {}
 ## Best Practices
 
 ### DO:
+
 - ✅ Organize by business domain
 - ✅ Use NestJS CLI for consistent generation
 - ✅ Keep modules focused and cohesive
@@ -179,6 +189,7 @@ export class UsersModule {}
 - ✅ Implement guards and interceptors at module level when possible
 
 ### DON'T:
+
 - ❌ Create "helpers" or "utils" folders as top-level concerns
 - ❌ Mix unrelated business logic in one module
 - ❌ Tightly couple modules (use imports/exports)
@@ -188,6 +199,7 @@ export class UsersModule {}
 ## Testing Strategy
 
 Each module should have:
+
 - **Unit tests** for services (`*.service.spec.ts`)
 - **Controller tests** for endpoints (`*.controller.spec.ts`)
 - **Integration tests** for complete flows (in `test/` directory)
@@ -195,6 +207,7 @@ Each module should have:
 ## Migration Guide
 
 When adding new features:
+
 1. Create a new module under `src/modules/[feature]`
 2. Define the module's public interface (exported services)
 3. Import the module in `app.module.ts` or parent module
